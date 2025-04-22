@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,39 +33,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     @Override
     public Usuario signUpUser(SignUpRequest signUpRequest) {
-        Usuario usuario = new Usuario();
-        usuario.setNombres(signUpRequest.getNombres());
-        usuario.setApellidos(signUpRequest.getApellidos());
-        usuario.setEmail(signUpRequest.getEmail());
-        usuario.setTipoDoc(signUpRequest.getTipoDoc());
-        usuario.setNumDoc(signUpRequest.getNumDoc());
-        Set<Rol> assginedRoles = new HashSet<>();
-        Rol userRol = rolRepository.findByNombreRol(Role.USER.name()).orElseThrow(() -> new RuntimeException("EL ROL NO EXISTE, REVISA TU BD"));
-        assginedRoles.add(userRol);
-        usuario.setRoles(assginedRoles);
-        //HASH AL PASSWORD PENDIENTE
-        usuario.setPassword(new BCryptPasswordEncoder().encode(signUpRequest.getPassword()));
-        return usuarioRepository.save(usuario);
+        return crearUsuario(signUpRequest, Set.of(Role.USER));
     }
 
     @Transactional
     @Override
     public Usuario signUpAdmin(SignUpRequest signUpRequest) {
-        Usuario usuario = new Usuario();
-        usuario.setNombres(signUpRequest.getNombres());
-        usuario.setApellidos(signUpRequest.getApellidos());
-        usuario.setEmail(signUpRequest.getEmail());
-        usuario.setTipoDoc(signUpRequest.getTipoDoc());
-        usuario.setNumDoc(signUpRequest.getNumDoc());
-        Set<Rol> assginedRoles = new HashSet<>();
-        Rol userRol = rolRepository.findByNombreRol(Role.ADMIN.name()).orElseThrow(() -> new RuntimeException("EL ROL NO EXISTE, REVISA TU BD"));
-        Rol userRol2 = rolRepository.findByNombreRol(Role.USER.name()).orElseThrow(() -> new RuntimeException("EL ROL NO EXISTE, REVISA TU BD"));
-        assginedRoles.add(userRol);
-        assginedRoles.add(userRol2);
-        usuario.setRoles(assginedRoles);
-        //HASH AL PASSWORD PENDIENTE
-        usuario.setPassword(new BCryptPasswordEncoder().encode(signUpRequest.getPassword()));
-        return usuarioRepository.save(usuario);
+        return crearUsuario(signUpRequest, Set.of(Role.ADMIN, Role.USER));
     }
 
     @Override
@@ -83,5 +58,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         AuthenticationResponse authenticationResponse = new AuthenticationResponse();
         authenticationResponse.setToken(token);
         return authenticationResponse;
+    }
+
+    //Metodos de apoyo
+    private Rol obtenerOCrearRol(Role roleType) {
+        return rolRepository.findByNombreRol(roleType.name())
+                .orElseGet(() -> {
+                    Rol nuevoRol = new Rol(roleType.name());
+                    return rolRepository.save(nuevoRol);
+                });
+    }
+
+    private Usuario crearUsuario(SignUpRequest request, Set<Role> roles) {
+        Usuario usuario = new Usuario();
+        usuario.setNombres(request.getNombres());
+        usuario.setApellidos(request.getApellidos());
+        usuario.setEmail(request.getEmail());
+        usuario.setTipoDoc(request.getTipoDoc());
+        usuario.setNumDoc(request.getNumDoc());
+        usuario.setPassword(new BCryptPasswordEncoder().encode(request.getPassword()));
+
+        Set<Rol> rolesAsignados = roles.stream()
+                .map(this::obtenerOCrearRol)
+                .collect(Collectors.toSet());
+        usuario.setRoles(rolesAsignados);
+
+        return usuarioRepository.save(usuario);
     }
 }

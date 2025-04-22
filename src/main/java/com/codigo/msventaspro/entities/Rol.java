@@ -1,13 +1,13 @@
 package com.codigo.msventaspro.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "rol")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,4 +15,8 @@ public class Rol {
 
     @Column(nullable = false, unique = true)
     private String nombreRol;
+
+    public Rol(String nombreRol) {
+        this.nombreRol = nombreRol;
+    }
 }

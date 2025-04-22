@@ -29,11 +29,12 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable) //Cross-Site Request Forgery
-                .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/autenticacion/**")
-                        .permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority(Role.ADMIN.name())
-                        .requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name())
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests(request -> request
+                                .requestMatchers("/api/v1/autenticacion/**").permitAll()
+                                .requestMatchers("/api/v1/admin/**").hasAnyAuthority(Role.ADMIN.name())
+                                .requestMatchers("/api/v1/user/**").hasAnyAuthority(Role.USER.name())
+                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                                .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class
