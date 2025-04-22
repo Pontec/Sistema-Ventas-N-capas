@@ -79,9 +79,6 @@ Sistema backend desarrollado en Spring Boot para la gestión de ventas de calzad
 4. Ejecutar: `mvn spring-boot:run`
 5. Acceder a Swagger: `http://localhost:8080/swagger-ui.html`
 
-## 📄 Licencia
-Este proyecto está bajo la Licencia MIT
-
 ## ✒️ Autor
-[Tu Nombre] - [Tu LinkedIn/GitHub]
+Jhonatan Ponce Policio - [link](https://www.linkedin.com/in/jhonatan-adrian-ponce-policio/)
 
